@@ -4,7 +4,7 @@ import { env } from '@/lib/env';
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const response = await fetch(`${env.AUTH_URL}/login`, {
+  const response = await fetch(`${env.AUTH_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
