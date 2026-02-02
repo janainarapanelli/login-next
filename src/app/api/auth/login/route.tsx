@@ -14,6 +14,8 @@ export async function POST(req: Request) {
      credentials: 'include' 
   });
 
+  console.log('Response status:', response)
+
   if (!response.ok) {
     return new Response('Invalid credentials', { status: 401 });
   }

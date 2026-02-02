@@ -10,13 +10,14 @@ export async function POST() {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  const response = await fetch(`${env.AUTH_URL}/auth/refresh`, {
+  const response = await fetch(`https://dummyjson.com/auth/refresh`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Tenant': env.KEY_INHIRE,
     },
     body: JSON.stringify({ refreshToken }),
+    credentials: 'include' 
   });
 
   if (!response.ok) {
