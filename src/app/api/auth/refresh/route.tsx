@@ -6,6 +6,7 @@ export async function POST() {
   const cookieStore = await cookies();
 
   const refreshToken = cookieStore.get('refreshToken')?.value;
+  console.log('[refresh] incoming refreshToken=', refreshToken ? 'FOUND' : 'MISSING');
   if (!refreshToken) {
     return new Response('Unauthorized', { status: 401 });
   }
@@ -28,9 +29,12 @@ export async function POST() {
 
   cookieStore.set('refreshToken', data.refreshToken, {
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
+    secure: process.env.NODE_ENV === 'production',
   });
+
+  console.log('[refresh] refreshToken updated');
 
   return Response.json({ accessToken: data.accessToken });
 }

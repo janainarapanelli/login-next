@@ -20,5 +20,5 @@ export async function login(payload: LoginPayload) {
 
 //realiza o logout chamando a api de auth interna que limpa o cookie
 export async function logout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
 }

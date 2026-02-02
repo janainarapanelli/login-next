@@ -31,6 +31,8 @@ const [username, setUsername] = useState("emilys");
       console.log("Login bem-sucedido!", data);
 
       localStorage.setItem("token", data.accessToken);
+      // redireciona imediatamente para o dashboard após login
+      window.location.href = '/dashboard';
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
