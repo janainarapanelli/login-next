@@ -4,13 +4,14 @@ import { env } from '@/lib/env';
 export async function POST(req: Request) {
   const body = await req.json();
 
-  const response = await fetch(`${env.AUTH_URL}/auth/login`, {
+
+  const response = await fetch(`https://dummyjson.com/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Tenant': env.KEY_INHIRE,
     },
     body: JSON.stringify(body),
+     credentials: 'include' 
   });
 
   if (!response.ok) {

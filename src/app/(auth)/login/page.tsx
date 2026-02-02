@@ -2,20 +2,20 @@
 import { useState } from "react";
 
 interface LoginResponse {
-  token: string;
+  accessToken: string;
   userId?: number;
 }
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const [username, setUsername] = useState("emilys");
+  const [password, setPassword] = useState("emilyspass");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,7 +30,7 @@ export default function LoginPage() {
       const data: LoginResponse = await response.json();
       console.log("Login bem-sucedido!", data);
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.accessToken);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
