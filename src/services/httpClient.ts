@@ -28,7 +28,15 @@ export async function httpClient(
       credentials: 'include',
     });
 
-    if (!refreshResponse.ok) throw new Error('Session expired');
+    if (!refreshResponse.ok) {
+      // refresh falhou -> limpar estado de auth e redirecionar para login
+      setAccessToken('');
+      try { localStorage.removeItem('token'); } catch {}
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired');
+    }
 
     const { accessToken: newToken } = await refreshResponse.json();
     setAccessToken(newToken);
