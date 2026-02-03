@@ -31,10 +31,11 @@ export async function POST() {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
+    maxAge: 5,
     secure: process.env.NODE_ENV === 'production',
   });
 
-  console.log('[refresh] refreshToken updated');
+  console.log('[refresh] refreshToken updated (5s)');
 
   return Response.json({ accessToken: data.accessToken });
 }

@@ -25,6 +25,7 @@ export async function httpClient(
   if (response.status === 401) {
     const refreshResponse = await fetch('/api/auth/refresh', {
       method: 'POST',
+      credentials: 'include',
     });
 
     if (!refreshResponse.ok) throw new Error('Session expired');

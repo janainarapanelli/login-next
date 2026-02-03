@@ -1,4 +1,5 @@
 import { env } from '@/lib/env';
+import { cookies } from 'next/headers';
 
 // Login handler recebe credenciais e chama a API externa de autenticação
 export async function POST(req: Request) {
@@ -22,16 +23,23 @@ export async function POST(req: Request) {
 
   const data = await response.json();
 
-  const headers = new Headers();
-
-// Refresh token protegido contra ataques XSS nao pode ser acessado via JavaScript
-  headers.append(
-    'Set-Cookie',
-    `refreshToken=${data.refreshToken}; HttpOnly; Path=/; SameSite=Strict`
-  );
+  // Se provedor nao retornar refreshToken, continuar mas logar (compatibilidade)
+  if (!data.refreshToken) {
+    console.log('[login] warning: refreshToken missing from auth provider, proceeding without cookie', data);
+  } else {
+    const cookieStore = await cookies();
+    cookieStore.set('refreshToken', data.refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 5,
+      secure: process.env.NODE_ENV === 'production',
+    });
+    console.log('[login] refreshToken set (5s)');
+  }
 
   // Retorna o token de acesso para o frontend
   return new Response(JSON.stringify({ accessToken: data.accessToken }), {
-    headers,
+    headers: { 'Content-Type': 'application/json' },
   });
 }
