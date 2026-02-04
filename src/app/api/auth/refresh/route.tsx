@@ -31,11 +31,11 @@ export async function POST() {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 5,
+    maxAge: 7 * 24 * 60 * 60, // 7 dias
     secure: process.env.NODE_ENV === 'production',
   });
 
-  console.log('[refresh] refreshToken updated (5s)');
+  console.log('[refresh] refreshToken updated (7 days)');
 
   return Response.json({ accessToken: data.accessToken });
 }

@@ -32,10 +32,10 @@ export async function POST(req: Request) {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: 5,
+      maxAge: 7 * 24 * 60 * 60, // 7 dias
       secure: process.env.NODE_ENV === 'production',
     });
-    console.log('[login] refreshToken set (5s)');
+    console.log('[login] refreshToken set (7 days)');
   }
 
   // Retorna o token de acesso para o frontend
