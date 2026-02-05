@@ -61,3 +61,16 @@ export async function loginAction(
     redirect('/dashboard');
 }
 
+/**
+ * Server Action para logout (alternativa à API route)
+ * 
+ * Poderia substituir /api/auth/logout se preferir usar apenas Server Actions
+ */
+export async function logoutAction(): Promise<void> {
+    const cookieStore = await cookies();
+    cookieStore.delete({ name: 'refreshToken', path: '/' });
+
+    console.log('[logoutAction] refreshToken deleted');
+
+    redirect('/login');
+}
