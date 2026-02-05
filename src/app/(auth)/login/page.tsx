@@ -1,67 +1,64 @@
-'use client';
-import { useState } from "react";
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+import LoginForm from './LoginForm';
 
-interface LoginResponse {
-  accessToken: string;
-  userId?: number;
+// Server Action para login
+async function loginAction(prevState: { error?: string } | void, formData: FormData) {
+  'use server';
+
+  const username = formData.get('username') as string;
+  const password = formData.get('password') as string;
+
+  if (!username || !password) {
+    return { error: 'Usuário e senha são obrigatórios' };
+  }
+
+  try {
+    // Chamar API externa de autenticação
+    const response = await fetch('https://dummyjson.com/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return { error: 'Usuário ou senha inválidos' };
+    }
+
+    const data = await response.json();
+
+    // Definir cookie HttpOnly com refresh token
+    if (data.refreshToken) {
+      const cookieStore = await cookies();
+      cookieStore.set('refreshToken', data.refreshToken, {
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 dias
+        secure: process.env.NODE_ENV === 'production',
+      });
+      console.log('[loginAction] refreshToken set (7 days)');
+    } else {
+      console.warn('[loginAction] warning: refreshToken missing from auth provider');
+    }
+
+  } catch (err) {
+    console.error('[loginAction] error:', err);
+    return { error: 'Erro ao conectar com o servidor' };
+  }
+
+  // Redirecionar para dashboard (server-side)
+  redirect('/dashboard');
 }
 
 export default function LoginPage() {
-const [username, setUsername] = useState("emilys");
-  const [password, setPassword] = useState("emilyspass");
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error("Usuário ou senha inválidos");
-      }
-
-      const data: LoginResponse = await response.json();
-      console.log("Login bem-sucedido!", data);
-
-      localStorage.setItem("token", data.accessToken);
-      // redireciona imediatamente para o dashboard após login
-      window.location.href = '/dashboard';
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Erro desconhecido");
-      }
-    }
-  };
-
   return (
     <main>
       <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <LoginForm loginAction={loginAction} />
     </main>
   );
 }
