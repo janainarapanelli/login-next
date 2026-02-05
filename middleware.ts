@@ -5,9 +5,9 @@ import type { NextRequest } from 'next/server';
  * Middleware de autenticação 100% server-side
  * 
  * - Verifica presença de refreshToken cookie
+ * - Valida expiração do JWT
  * - Protege rotas do dashboard
  * - Redireciona usuários não autenticados
- * - TODO: Adicionar validação de expiração JWT
  */
 export function middleware(req: NextRequest) {
   const refreshToken = req.cookies.get('refreshToken')?.value;
@@ -35,8 +35,26 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/login', req.url));
     }
 
-    // TODO: Validar se token está expirado (decodificar JWT)
-    // Se expirado, redirecionar para login
+    // Validar se token está expirado (decodificar JWT)
+    try {
+      // Decodificar JWT sem verificar assinatura (apenas ler payload)
+      const base64Payload = refreshToken.split('.')[1];
+      if (!base64Payload) {
+        console.log('[middleware] Invalid token format, redirecting to login');
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+
+      const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
+
+      // Verificar expiração
+      if (payload.exp && payload.exp < Date.now() / 1000) {
+        console.log('[middleware] Token expired, redirecting to login');
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+    } catch (err) {
+      console.error('[middleware] Error decoding token:', err);
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
 
     return NextResponse.next();
   }
