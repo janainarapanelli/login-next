@@ -1,53 +1,31 @@
-// guarda variavel de token de acesso em memória
+/**
+ * HTTP Client simplificado para autenticação 100% server-side
+ * 
+ * - Não armazena tokens em memória ou localStorage
+ * - Envia cookies automaticamente via credentials: 'include'
+ * - Redireciona para login se sessão expirada (401)
+ */
 
-let accessToken: string | null = null;
-
-export const setAccessToken = (token: string) => {
-  accessToken = token;
-};
-
-//atualiza o token depois do login ou refresh
 export async function httpClient(
   input: RequestInfo,
   init?: RequestInit
 ) {
-  const headers = {
-    ...(init?.headers || {}),
-    Authorization: accessToken ? `Bearer ${accessToken}` : '',
-  };
-
   const response = await fetch(input, {
     ...init,
-    headers,
+    credentials: 'include', // Envia cookies automaticamente
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init?.headers || {}),
+    },
   });
 
-  //acesso token expirado faz o refresh token automatico
+  // Se 401, sessão expirada - redirecionar para login
   if (response.status === 401) {
-    const refreshResponse = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (!refreshResponse.ok) {
-      // refresh falhou -> limpar estado de auth e redirecionar para login
-      setAccessToken('');
-      try { localStorage.removeItem('token'); } catch {}
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-      throw new Error('Session expired');
+    if (typeof window !== 'undefined') {
+      console.warn('[httpClient] Session expired, redirecting to login');
+      window.location.href = '/login';
     }
-
-    const { accessToken: newToken } = await refreshResponse.json();
-    setAccessToken(newToken);
-
-    return fetch(input, {
-      ...init,
-      headers: {
-        ...headers,
-        Authorization: `Bearer ${newToken}`,
-      },
-    });
+    throw new Error('Session expired');
   }
 
   return response;
