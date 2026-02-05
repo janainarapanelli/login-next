@@ -9,8 +9,19 @@ async function loginAction(prevState: { error?: string } | void, formData: FormD
   const username = formData.get('username') as string;
   const password = formData.get('password') as string;
 
+  // Validação de input
   if (!username || !password) {
     return { error: 'Usuário e senha são obrigatórios' };
+  }
+
+  // Validar formato do username (alfanumérico e underscore, 3-50 caracteres)
+  if (!/^[a-zA-Z0-9_]{3,50}$/.test(username)) {
+    return { error: 'Usuário inválido' };
+  }
+
+  // Validar tamanho da senha (mínimo 6 caracteres)
+  if (password.length < 6 || password.length > 100) {
+    return { error: 'Senha inválida' };
   }
 
   try {
