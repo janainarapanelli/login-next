@@ -1,17 +1,17 @@
 'use client';
-import { useAuth } from '@/features/auth/auth.hooks';
-import { setAccessToken } from '@/services/httpClient';
 
 export default function Header() {
-  const { logout } = useAuth();
-
   const handleLogout = async () => {
     try {
-      await logout();
+      // Chamar API de logout para remover cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (err) {
+      console.error('[Header] logout error:', err);
     } finally {
-      // limpa token local e in-memory e redireciona
-      localStorage.removeItem('token');
-      setAccessToken('');
+      // Redirecionar para login
       window.location.href = '/login';
     }
   };
